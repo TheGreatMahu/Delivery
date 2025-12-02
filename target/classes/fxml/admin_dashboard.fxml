@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.delivery.controllers.AdminDashboardController"
+            prefWidth="800" prefHeight="500">
+
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <items>
+                <!-- Product Management -->
+                <VBox spacing="8">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <Label text="Product Management"/>
+                    <GridPane hgap="5" vgap="5">
+                        <children>
+                            <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                            <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <TextField fx:id="descriptionField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                            <Label text="Price:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <TextField fx:id="priceField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                            <Label text="Stock:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <TextField fx:id="stockField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        </children>
+                    </GridPane>
+
+                    <HBox spacing="5">
+                        <Button text="Add" onAction="#onAddProduct"/>
+                        <Button text="Update" onAction="#onUpdateProduct"/>
+                        <Button text="Delete" onAction="#onDeleteProduct"/>
+                    </HBox>
+
+                    <TableView fx:id="productTable" onMouseClicked="#onProductTableClicked" prefHeight="300">
+                        <columns>
+                            <TableColumn fx:id="colProdId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colProdTitle" text="Title" prefWidth="120"/>
+                            <TableColumn fx:id="colProdDesc" text="Description" prefWidth="150"/>
+                            <TableColumn fx:id="colProdPrice" text="Price" prefWidth="80"/>
+                            <TableColumn fx:id="colProdStock" text="Stock" prefWidth="60"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <!-- Order Management -->
+                <VBox spacing="8">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <Label text="Orders &amp; Assignment"/>
+                    <TableView fx:id="orderTable" prefHeight="300">
+                        <columns>
+                            <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="80"/>
+                            <TableColumn fx:id="colOrderCustId" text="Customer ID" prefWidth="100"/>
+                            <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="120"/>
+                            <TableColumn fx:id="colOrderAmount" text="Amount" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+
+                    <HBox spacing="5">
+                        <Label text="Assign to:"/>
+                        <ComboBox fx:id="deliveryManComboBox" prefWidth="150"/>
+                        <Button text="Assign" onAction="#onAssignDeliveryMan"/>
+                        <Button text="Mark Delivered" onAction="#onMarkDelivered"/>
+                    </HBox>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
