@@ -6,41 +6,58 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.delivery.controllers.DeliveryDashboardController"
-            prefWidth="700" prefHeight="450">
+            prefWidth="750" prefHeight="500">
 
     <top>
-        <HBox spacing="10">
+        <HBox spacing="10" alignment="CENTER_LEFT">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label fx:id="welcomeLabel" text="Welcome, Delivery Man"/>
+            <Label fx:id="welcomeLabel" text="Welcome, Delivery Person" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" onAction="#onLogout" style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 8 16;"/>
         </HBox>
     </top>
 
     <center>
-        <VBox spacing="8">
+        <VBox spacing="10">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label text="Assigned Orders"/>
-            <TableView fx:id="orderTable" prefHeight="350">
+
+            <Label text="My Assigned Orders" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            
+            <TableView fx:id="orderTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="80"/>
-                    <TableColumn fx:id="colOrderCustId" text="Customer ID" prefWidth="100"/>
-                    <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="150"/>
-                    <TableColumn fx:id="colOrderAmount" text="Amount" prefWidth="100"/>
+                    <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="100"/>
+                    <TableColumn fx:id="colOrderCustId" text="Customer ID" prefWidth="120"/>
+                    <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="180"/>
+                    <TableColumn fx:id="colOrderAmount" text="Amount (৳)" prefWidth="120"/>
                 </columns>
+                <placeholder>
+                    <Label text="No orders assigned to you yet"/>
+                </placeholder>
             </TableView>
+
+            <HBox spacing="10" alignment="CENTER">
+                <padding>
+                    <Insets top="10"/>
+                </padding>
+                <Label text="💡 Select an order and update its status:" style="-fx-font-style: italic;"/>
+            </HBox>
         </VBox>
     </center>
 
     <bottom>
-        <HBox spacing="10" alignment="CENTER_RIGHT">
+        <HBox spacing="12" alignment="CENTER_RIGHT">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Button text="Out for Delivery" onAction="#onMarkOutForDelivery"/>
-            <Button text="Delivered" onAction="#onMarkDelivered"/>
+            <Button text="🚚 Out for Delivery" onAction="#onMarkOutForDelivery" 
+                    style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-size: 13px;"/>
+            <Button text="✓ Mark as Delivered" onAction="#onMarkDelivered" 
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-size: 13px;"/>
         </HBox>
     </bottom>
+
 </BorderPane>

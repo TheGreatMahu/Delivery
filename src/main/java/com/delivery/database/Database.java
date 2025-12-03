@@ -11,47 +11,44 @@ import java.sql.Statement;
 
 public class Database {
 
-    private static final String DB_FILE = "database/ods.db";   // Real DB location
-    private static final String SCHEMA_FILE = "/database/schema.sql";  // resource file
-    private static final String SEED_FILE = "/database/seed.sql";      // resource file
+    private static final String DB_FILE = "F:/OOP DELIVERY/ods.db";  
+    private static final String SCHEMA_FILE = "/database/schema.sql";
+    private static final String SEED_FILE = "/database/seed.sql";
 
     static {
         try {
             Class.forName("org.sqlite.JDBC");
 
-            // Check if database exists
             if (!Files.exists(Paths.get(DB_FILE))) {
-                System.out.println("Database not found. Creating a new database...");
+                System.out.println("Database not found. Creating...");
                 initializeDatabase();
             }
 
         } catch (Exception e) {
-            System.err.println("Error initializing database: " + e.getMessage());
+            System.err.println("DB Init Error: " + e.getMessage());
         }
     }
 
-    // Return a connection to SQLite DB
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:sqlite:" + DB_FILE);
     }
 
-    // Create DB using schema.sql + seed.sql
     private static void initializeDatabase() throws Exception {
+        Files.createDirectories(Paths.get("F:/OOP DELIVERY"));
         runSqlScript(SCHEMA_FILE);
         runSqlScript(SEED_FILE);
-        System.out.println("Database created and initialized successfully!");
+        System.out.println("Database created + seeded successfully!");
     }
 
-    // Reads SQL script from resources folder & executes it
-    private static void runSqlScript(String resourcePath) throws Exception {
+    private static void runSqlScript(String path) throws Exception {
         try (Connection conn = getConnection()) {
             conn.setAutoCommit(false);
 
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(Database.class.getResourceAsStream(resourcePath))
+                new InputStreamReader(Database.class.getResourceAsStream(path))
             )) {
                 if (reader == null) {
-                    throw new RuntimeException("Unable to load resource: " + resourcePath);
+                    throw new RuntimeException("Cannot load " + path);
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -60,7 +57,6 @@ public class Database {
                 while ((line = reader.readLine()) != null) {
                     sb.append(line);
 
-                    // Execute when a complete statement is found
                     if (line.trim().endsWith(";")) {
                         try (Statement stmt = conn.createStatement()) {
                             stmt.execute(sb.toString());

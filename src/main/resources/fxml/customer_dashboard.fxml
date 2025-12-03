@@ -6,24 +6,28 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.delivery.controllers.CustomerDashboardController"
-            prefWidth="700" prefHeight="450">
+            prefWidth="700" prefHeight="500">
 
     <top>
-        <HBox spacing="10">
-        <padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
-            <Label fx:id="welcomeLabel" text="Welcome, Customer"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label fx:id="welcomeLabel" text="Welcome, Customer" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" onAction="#onLogout" style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
         </HBox>
     </top>
 
     <center>
-        <VBox spacing="8">
-        <padding>
-            <Insets top="10" right="10" bottom="10" left="10"/>
-        </padding>
-            <Label text="Available Products"/>
-            <TableView fx:id="productTable" prefHeight="350">
+        <VBox spacing="12">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <!-- PRODUCT SECTION -->
+            <Label text="Available Products" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <TableView fx:id="productTable" prefHeight="220">
                 <columns>
                     <TableColumn fx:id="colProdId" text="ID" prefWidth="50"/>
                     <TableColumn fx:id="colProdTitle" text="Title" prefWidth="150"/>
@@ -32,15 +36,27 @@
                     <TableColumn fx:id="colProdStock" text="Stock" prefWidth="80"/>
                 </columns>
             </TableView>
+
+            <!-- ORDER STATUS SECTION -->
+            <Label text="Your Orders" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <TableView fx:id="orderTable" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="80"/>
+                    <TableColumn fx:id="colOrderAmount" text="Amount" prefWidth="100"/>
+                    <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="150"/>
+                </columns>
+            </TableView>
+
         </VBox>
     </center>
 
     <bottom>
         <HBox spacing="10" alignment="CENTER_RIGHT">
-<padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
-            <Button text="Place Order (1 qty)" onAction="#onPlaceOrder"/>
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Place Order (1 qty)" onAction="#onPlaceOrder" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
         </HBox>
     </bottom>
+
 </BorderPane>

@@ -8,10 +8,18 @@ import com.delivery.models.Order;
 import com.delivery.models.OrderStatus;
 import com.delivery.models.Product;
 import com.delivery.util.AlertUtil;
+import com.delivery.util.SessionHolder;
+
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 public class AdminDashboardController {
 
@@ -46,35 +54,50 @@ public class AdminDashboardController {
 
     @FXML
     public void initialize() {
-        // Product table
-        colProdId.setCellValueFactory(c -> new javafx.beans.property.SimpleIntegerProperty(c.getValue().getId()).asObject());
-        colProdTitle.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getTitle()));
-        colProdDesc.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getDescription()));
-        colProdPrice.setCellValueFactory(c -> new javafx.beans.property.SimpleDoubleProperty(c.getValue().getPrice()).asObject());
-        colProdStock.setCellValueFactory(c -> new javafx.beans.property.SimpleIntegerProperty(c.getValue().getStock()).asObject());
+        // Product table bindings
+        colProdId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()).asObject());
+        colProdTitle.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTitle()));
+        colProdDesc.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDescription()));
+        colProdPrice.setCellValueFactory(c -> new SimpleDoubleProperty(c.getValue().getPrice()).asObject());
+        colProdStock.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getStock()).asObject());
         productTable.setItems(productList);
 
-        // Orders table
-        colOrderId.setCellValueFactory(c -> new javafx.beans.property.SimpleIntegerProperty(c.getValue().getId()).asObject());
-        colOrderCustId.setCellValueFactory(c -> new javafx.beans.property.SimpleIntegerProperty(c.getValue().getCustomerId()).asObject());
-        colOrderStatus.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getStatus().name()));
-        colOrderAmount.setCellValueFactory(c -> new javafx.beans.property.SimpleDoubleProperty(c.getValue().getTotalAmount()).asObject());
+        // Orders table bindings
+        colOrderId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()).asObject());
+        colOrderCustId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getCustomerId()).asObject());
+        colOrderStatus.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getStatus().name()));
+        colOrderAmount.setCellValueFactory(c -> new SimpleDoubleProperty(c.getValue().getTotalAmount()).asObject());
         orderTable.setItems(orderList);
 
-        // Delivery men
-        deliveryMen.addAll(deliveryManDAO.findAll());
-        deliveryManComboBox.setItems(deliveryMen);
+        // Delivery men combo box
+        try {
+            deliveryMen.addAll(deliveryManDAO.findAll());
+            deliveryManComboBox.setItems(deliveryMen);
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to load delivery men: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         loadProducts();
         loadOrders();
     }
 
     private void loadProducts() {
-        productList.setAll(productDAO.findAll());
+        try {
+            productList.setAll(productDAO.findAll());
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to load products: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void loadOrders() {
-        orderList.setAll(orderDAO.findAll());
+        try {
+            orderList.setAll(orderDAO.findAll());
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to load orders: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -82,19 +105,45 @@ public class AdminDashboardController {
         try {
             String title = titleField.getText().trim();
             String desc = descriptionField.getText().trim();
-            double price = Double.parseDouble(priceField.getText().trim());
-            int stock = Integer.parseInt(stockField.getText().trim());
+            String priceText = priceField.getText().trim();
+            String stockText = stockField.getText().trim();
 
-            if (title.isEmpty() || desc.isEmpty()) {
-                AlertUtil.error("Error", "Title and description required");
+            // Validation
+            if (title.isEmpty()) {
+                AlertUtil.error("Validation Error", "Title is required");
+                return;
+            }
+            if (desc.isEmpty()) {
+                AlertUtil.error("Validation Error", "Description is required");
+                return;
+            }
+            if (priceText.isEmpty() || stockText.isEmpty()) {
+                AlertUtil.error("Validation Error", "Price and stock are required");
                 return;
             }
 
-            productDAO.insert(new Product(0, title, desc, price, stock));
+            double price = Double.parseDouble(priceText);
+            int stock = Integer.parseInt(stockText);
+
+            if (price < 0) {
+                AlertUtil.error("Validation Error", "Price cannot be negative");
+                return;
+            }
+            if (stock < 0) {
+                AlertUtil.error("Validation Error", "Stock cannot be negative");
+                return;
+            }
+
+            Product newProduct = new Product(0, title, desc, price, stock);
+            productDAO.insert(newProduct);
+            AlertUtil.info("Success", "Product added successfully");
             loadProducts();
             clearProductForm();
         } catch (NumberFormatException e) {
-            AlertUtil.error("Error", "Invalid price or stock");
+            AlertUtil.error("Error", "Invalid price or stock format. Please enter valid numbers.");
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to add product: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -102,18 +151,44 @@ public class AdminDashboardController {
     private void onUpdateProduct() {
         Product p = productTable.getSelectionModel().getSelectedItem();
         if (p == null) {
-            AlertUtil.error("Error", "Select a product to update");
+            AlertUtil.error("Error", "Please select a product to update");
             return;
         }
+
         try {
-            p.setTitle(titleField.getText().trim());
-            p.setDescription(descriptionField.getText().trim());
-            p.setPrice(Double.parseDouble(priceField.getText().trim()));
-            p.setStock(Integer.parseInt(stockField.getText().trim()));
+            String title = titleField.getText().trim();
+            String desc = descriptionField.getText().trim();
+            String priceText = priceField.getText().trim();
+            String stockText = stockField.getText().trim();
+
+            // Validation
+            if (title.isEmpty() || desc.isEmpty()) {
+                AlertUtil.error("Validation Error", "Title and description are required");
+                return;
+            }
+
+            double price = Double.parseDouble(priceText);
+            int stock = Integer.parseInt(stockText);
+
+            if (price < 0 || stock < 0) {
+                AlertUtil.error("Validation Error", "Price and stock cannot be negative");
+                return;
+            }
+
+            p.setTitle(title);
+            p.setDescription(desc);
+            p.setPrice(price);
+            p.setStock(stock);
+
             productDAO.update(p);
+            AlertUtil.info("Success", "Product updated successfully");
             loadProducts();
+            clearProductForm();
         } catch (NumberFormatException e) {
-            AlertUtil.error("Error", "Invalid price or stock");
+            AlertUtil.error("Error", "Invalid price or stock format. Please enter valid numbers.");
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to update product: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -121,17 +196,26 @@ public class AdminDashboardController {
     private void onDeleteProduct() {
         Product p = productTable.getSelectionModel().getSelectedItem();
         if (p == null) {
-            AlertUtil.error("Error", "Select a product to delete");
+            AlertUtil.error("Error", "Please select a product to delete");
             return;
         }
-        productDAO.delete(p.getId());
-        loadProducts();
+
+        try {
+            productDAO.delete(p.getId());
+            AlertUtil.info("Success", "Product deleted successfully");
+            loadProducts();
+            clearProductForm();
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to delete product: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void onProductTableClicked() {
         Product p = productTable.getSelectionModel().getSelectedItem();
         if (p == null) return;
+        
         titleField.setText(p.getTitle());
         descriptionField.setText(p.getDescription());
         priceField.setText(String.valueOf(p.getPrice()));
@@ -139,28 +223,56 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void onLogout() {
+        try {
+            SessionHolder.clearSession();
+            com.delivery.App.setRoot("Login", "/fxml/login.fxml");
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to logout: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     private void onAssignDeliveryMan() {
         Order o = orderTable.getSelectionModel().getSelectedItem();
         DeliveryMan d = deliveryManComboBox.getSelectionModel().getSelectedItem();
 
-        if (o == null || d == null) {
-            AlertUtil.error("Error", "Select an order and a delivery man");
+        if (o == null) {
+            AlertUtil.error("Error", "Please select an order");
+            return;
+        }
+        if (d == null) {
+            AlertUtil.error("Error", "Please select a delivery man");
             return;
         }
 
-        orderDAO.assignDeliveryMan(o.getId(), d.getId());
-        loadOrders();
+        try {
+            orderDAO.assignDeliveryMan(o.getId(), d.getId());
+            AlertUtil.info("Success", "Delivery man assigned successfully");
+            loadOrders();
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to assign delivery man: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void onMarkDelivered() {
         Order o = orderTable.getSelectionModel().getSelectedItem();
         if (o == null) {
-            AlertUtil.error("Error", "Select an order");
+            AlertUtil.error("Error", "Please select an order");
             return;
         }
-        orderDAO.updateStatus(o.getId(), OrderStatus.DELIVERED);
-        loadOrders();
+
+        try {
+            orderDAO.updateStatus(o.getId(), OrderStatus.DELIVERED);
+            AlertUtil.info("Success", "Order marked as delivered");
+            loadOrders();
+        } catch (Exception e) {
+            AlertUtil.error("Error", "Failed to update order status: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void clearProductForm() {
@@ -168,5 +280,6 @@ public class AdminDashboardController {
         descriptionField.clear();
         priceField.clear();
         stockField.clear();
+        productTable.getSelectionModel().clearSelection();
     }
 }
